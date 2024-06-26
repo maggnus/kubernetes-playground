@@ -1,0 +1,19 @@
+prometheus:
+  # Value is templated
+  url: http://prometheus.istio-system.svc
+  port: 9090
+  path: ""
+
+rules:
+  custom:
+    - seriesQuery: 'http_requests_total{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace:
+            resource: namespace
+          pod:
+            resource: pod
+      name:
+        matches: "^(.*)_total"
+        as: "${1}" # future name of the metric [http_requests]_total
+      metricsQuery: 'sum(rate(http_requests_total{<<.LabelMatchers>>}[5m])) by (<<.GroupBy>>)'
